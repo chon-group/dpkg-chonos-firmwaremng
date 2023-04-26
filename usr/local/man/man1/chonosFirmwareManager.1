@@ -1,0 +1,47 @@
+.\" Manpage for chonosFirmwareManager.
+.\" Contact chon@grupo.cefet-rj.br.
+.TH man 8 "25 Apr 2023" "1.0" "chonosFirmwareManager man page"
+
+.SH NAME
+chonosFirmwareManager \- ChonOS Firmware Layer Manager
+
+.SH DESCRIPTION
+A manager of the Firmware Layer for Embedded Multi-agent Systems.
+
+List of options and arguments:
+
+--help          \- shows this tutorial.
+
+--list          \- shows all connected microcontrollers.
+
+-s [sketck]     \- creates and compile a Firmware Project
+    -f [file]   \- defines the .INO firmware code 
+    -b [board]  \- defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)
+
+-d [sketck]     \- deploys the Firmware Project
+    -b [board]  \- defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)
+    -p [port]   \- defines the USB port.
+
+--listLibraries \- shows all instaled libraries.
+
+-i [library]    \- imports a .ZIP library file.
+
+.SH EXAMPLES
+chonosFirmwareManager -i /tmp/mylibrary.zip
+    Imports a library for the Arduino Libraries Folder
+
+chonosFirmwareManager -s myproject -f /tmp/firmware.ino -b arduino:avr:mega
+    Compiles the Firmware Project <myproject> using the source file </tmp/firmware.ino> for the Arduino Mega board  
+
+chonosFirmwareManager -d teste -b arduino:avr:mega -p /dev/ttyACM0
+    Deploys the previously compiled Firmware Project <myproject> for the Arduino Mega board connected at /dev/ttyACM0 port 
+
+.SH REPORTING BUGS
+Research Group in Cognitive Hardware On Networks: chon@grupo.cefet-rj.br
+
+.SH COPYRIGHT
+Copyright © 2023 Chon Group <http://chon.group>.  License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.
+This is free software: you are free to change and redistribute it.  There is NO WARRANTY, to the extent permitted by law.
+
+.SH AUTHOR
+Lazarin N. M. <chon@grupo.cefet-rj.br>.
