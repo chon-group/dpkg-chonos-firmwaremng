@@ -20,15 +20,15 @@ done
 if [ "$opt" = "help" ]; then
 	man chonosFirmwareManager
 elif [ "$opt" = "list" ]; then
-	/usr/bin/arduino-cli board list | grep arduino > $EmbedMAS_TMP/arduinoboard
+	/usr/bin/arduino-cli board list | grep -e "ttyACM" -e "ttyUSB" > $EmbedMAS_TMP/arduinoboard
 	qtd=`cat $EmbedMAS_TMP/arduinoboard | nl | tail -1 | xargs | cut -d " " -f 1`
 
 	echo -n "[" > $EmbedMAS_TMP/json.out
 	i=0
 	while read -r LINE; do
 		port=`echo $LINE | xargs | cut -d " " -f 1`
-		fqbn=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | cut -d ":" -f 2-4 | cut -d " " -f 1`
-		core=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | cut -d ":" -f 5-6`
+		fqbn=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown,g' | cut -d ":" -f 2-4 | cut -d " " -f 1`
+		core=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown:unknown:unknown,g' |cut -d ":" -f 5-6`
 		board=`echo $LINE  | xargs | sed 's,USB) ,{,g' | sed 's, arduino:,},g' | cut -d "{" -f 2 | cut -d "}" -f 1`
 
 		echo "{" >> $EmbedMAS_TMP/json.out
