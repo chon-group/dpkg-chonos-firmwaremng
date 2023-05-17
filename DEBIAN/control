@@ -8,7 +8,7 @@ Pre-depends: curl
 Suggests:
 Installed-Size:
 Maintainer: chon@grupo.cefet-rj.br
-Conflicts:
+Conflicts: brltty
 Replaces:
 Provides:
 Description: ChonOS Firmware Layer Manager.
