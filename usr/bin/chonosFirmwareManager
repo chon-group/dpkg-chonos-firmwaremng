@@ -17,6 +17,11 @@ do
     esac
 done
 
+if [ "$board" = "unknown:unknown:unknown" ]
+then
+	board="arduino:avr:uno"
+fi
+
 if [ "$opt" = "help" ]; then
 	man chonosFirmwareManager
 elif [ "$opt" = "list" ]; then
