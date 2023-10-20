@@ -4,7 +4,7 @@ EmbedMAS_HOME=/opt/chonos-embMAS
 EmbedMAS_TMP=/tmp/.embedMAS
 mkdir -p $EmbedMAS_TMP
 
-while getopts b:d:i:f:p:s:-: flag
+while getopts b:d:i:f:l:p:s:-: flag
 do
     case "${flag}" in
         i) importLib=${OPTARG};;
@@ -13,6 +13,7 @@ do
 		f) file=${OPTARG};;
 		b) board=${OPTARG};;
 		p) port=${OPTARG};;
+		l) log=${OPTARG};;
         -) opt=${OPTARG};;
     esac
 done
@@ -20,6 +21,11 @@ done
 if [ "$board" = "unknown:unknown:unknown" ]
 then
 	board="arduino:avr:uno"
+fi
+
+if [ "$log" = "" ]
+then
+	log="text"
 fi
 
 if [ "$opt" = "help" ]; then
@@ -78,22 +84,28 @@ elif [ "$importLib" != "" ]; then
 elif [ "$sketch" != "" ]; then
 	if [ "$file" != "" ]; then
 		if [ "$board" != "" ]; then
+		    echo " " >> $EmbedMAS_TMP/embeddedMAS.log
+			echo "[chonosFirmwareManager] Compiling $file " >> $EmbedMAS_TMP/embeddedMAS.log
 			rm -rf /tmp/$sketch
 			rm -rf $EmbedMAS_TMP/fimrware-log.out
-			/usr/bin/arduino-cli sketch new /tmp/$sketch >> $EmbedMAS_TMP/fimrware-log.out
-			mv $file /tmp/$sketch/$sketch.ino
-			md5sum /tmp/$sketch/* >> $EmbedMAS_TMP/fimrware-log.out
-			/usr/bin/arduino-cli compile --libraries /root/Arduino/libraries/ --fqbn $board /tmp/$sketch >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
-			cat $EmbedMAS_TMP/fimrware-log.out >> $EmbedMAS_TMP/embeddedMAS.log
+			/usr/bin/arduino-cli sketch new /tmp/$sketch --format $log --no-color>> $EmbedMAS_TMP/fimrware-log.out
+			cp $file /tmp/$sketch/$sketch.ino
+			/usr/bin/arduino-cli compile --libraries /root/Arduino/libraries/ --fqbn $board /tmp/$sketch --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
+			cat $EmbedMAS_TMP/fimrware-log.out | grep compiler_out | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
+			cat $EmbedMAS_TMP/fimrware-log.out | grep compiler_err | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
+			cat $EmbedMAS_TMP/fimrware-log.out | grep "\"error\":" | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out
 		fi
 	fi
 elif [ "$deploy" != "" ]; then
 	if [ "$board" != "" ]; then
 		if [ "$port" != "" ]; then
+			echo " " >> $EmbedMAS_TMP/embeddedMAS.log
+			echo "[chonosFirmwareManager] Deploying $deploy " >> $EmbedMAS_TMP/embeddedMAS.log
 			rm -rf $EmbedMAS_TMP/fimrware-log.out
-			/usr/bin/arduino-cli upload --verbose --fqbn $board -p $port /tmp/$deploy >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
-			cat $EmbedMAS_TMP/fimrware-log.out >> $EmbedMAS_TMP/embeddedMAS.log
+			/usr/bin/arduino-cli upload --verbose --fqbn $board -p $port /tmp/$deploy --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
+			cat $EmbedMAS_TMP/fimrware-log.out | grep stderr | sed 's/\\n/\n/g' | grep "avrdude: "  >> $EmbedMAS_TMP/embeddedMAS.log
+			cat $EmbedMAS_TMP/fimrware-log.out | grep error | cut -d "\"" -f 4   >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out
 		fi
 	fi
