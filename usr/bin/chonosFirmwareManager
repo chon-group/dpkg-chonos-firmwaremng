@@ -4,10 +4,11 @@ EmbedMAS_HOME=/opt/chonos-embMAS
 EmbedMAS_TMP=/tmp/.embedMAS
 mkdir -p $EmbedMAS_TMP
 
-while getopts b:d:i:f:l:p:s:-: flag
+while getopts b:d:i:f:l:p:r:s:-: flag
 do
     case "${flag}" in
         i) importLib=${OPTARG};;
+		r) removeLib=${OPTARG};;
 		d) deploy=${OPTARG};;
 		s) sketch=${OPTARG};;
 		f) file=${OPTARG};;
@@ -18,69 +19,113 @@ do
     esac
 done
 
-if [ "$board" = "unknown:unknown:unknown" ]
-then
+if [ "$board" = "unknown:unknown:unknown" ]; then
 	board="arduino:avr:uno"
 fi
 
-if [ "$log" = "" ]
-then
+if [ "$log" = "" ]; then
 	log="text"
 fi
 
 if [ "$opt" = "help" ]; then
 	man chonosFirmwareManager
+elif [ "$opt" = "deploy" ]; then
+	echo "Upgrading the firmware layer..."
+	if [ -n "$file" ] && [ -n "$port" ] && [ -n "$board" ] && [ -e "$file" ] && [ -e "$port" ]; then
+		result=`usr/bin/chonosFirmwareManager -s importingProject -f "$file" -b "$board" -l json | grep "success" | tr -d ' ' | tr -d ',' | xargs | cut -d ":" -f 2`
+		if [ "$result" = "true" ]; then
+			result=`usr/bin/chonosFirmwareManager -d importingProject -p "$port" -b "$board" -l json | grep error`
+			if [ "$result" = "" ]; then
+				echo SUCCESS
+			else
+				echo ERROR
+			fi
+		else
+			echo "ERROR"
+			echo "To verify, execute: chonosFirmwareManager -s testing -f "$file" -b "$board""
+		fi
+	else
+		if [ ! -e "$file" ]; then
+			echo "$file does not exist"
+		elif [ ! -e "$port" ]; then
+			echo "$port does not exist."
+		else
+			echo " You need define the [FirmwareFile], [SerialPort] and [Board] parameters"
+			echo "  example: chonosFirmwareManager –-deploy -f firmware.ino -p /dev/ttyACM0 -b arduino:avr:uno"
+			echo " "
+			echo " See https://github.com/chon-group/dpkg-chonos-firmwaremng for more information"
+		fi
+	fi
+
 elif [ "$opt" = "list" ]; then
-	/usr/bin/arduino-cli board list | grep -e "ttyACM" -e "ttyUSB" > $EmbedMAS_TMP/arduinoboard
-	qtd=`cat $EmbedMAS_TMP/arduinoboard | nl | tail -1 | xargs | cut -d " " -f 1`
+	# Mantendo compatibilidade com versao anterior da chonIDE futuras versões irão retornar em formato text
+	if [ "$log" = "text" ]; then
+		/usr/bin/arduino-cli board list | grep -e "ttyACM" -e "ttyUSB" > $EmbedMAS_TMP/arduinoboard
+		qtd=`cat $EmbedMAS_TMP/arduinoboard | nl | tail -1 | xargs | cut -d " " -f 1`
 
-	echo -n "[" > $EmbedMAS_TMP/json.out
-	i=0
-	while read -r LINE; do
-		port=`echo $LINE | xargs | cut -d " " -f 1`
-		fqbn=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown,g' | cut -d ":" -f 2-4 | cut -d " " -f 1`
-		core=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown:unknown:unknown,g' |cut -d ":" -f 5-6`
-		board=`echo $LINE  | xargs | sed 's,USB) ,{,g' | sed 's, arduino:,},g' | cut -d "{" -f 2 | cut -d "}" -f 1`
+		echo -n "[" > $EmbedMAS_TMP/json.out
+		i=0
+		while read -r LINE; do
+			port=`echo $LINE | xargs | cut -d " " -f 1`
+			fqbn=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown,g' | cut -d ":" -f 2-4 | cut -d " " -f 1`
+			core=`echo $LINE | xargs | sed 's,arduino:,:arduino:,g' | sed 's,Unknown,Unknown :unknown:unknown:unknown:unknown:unknown,g' |cut -d ":" -f 5-6`
+			board=`echo $LINE  | xargs | sed 's,USB) ,{,g' | sed 's, arduino:,},g' | cut -d "{" -f 2 | cut -d "}" -f 1`
 
-		echo "{" >> $EmbedMAS_TMP/json.out
-			echo "	\"board\": \"$board\"," >> $EmbedMAS_TMP/json.out
-			echo "	\"port\" : \"$port\"," >> $EmbedMAS_TMP/json.out
-			echo "	\"fqbn\" : \"$fqbn\"," >> $EmbedMAS_TMP/json.out
-			echo "	\"core\" : \"$core\"" >> $EmbedMAS_TMP/json.out
+			echo "{" >> $EmbedMAS_TMP/json.out
+				echo "	\"board\": \"$board\"," >> $EmbedMAS_TMP/json.out
+				echo "	\"port\" : \"$port\"," >> $EmbedMAS_TMP/json.out
+				echo "	\"fqbn\" : \"$fqbn\"," >> $EmbedMAS_TMP/json.out
+				echo "	\"core\" : \"$core\"" >> $EmbedMAS_TMP/json.out
 
-		i=$((i+1))
-		if [ $i -le $((qtd-1)) ]; then
-			echo -n "}," >> $EmbedMAS_TMP/json.out
-		else
-			echo -n "}" >> $EmbedMAS_TMP/json.out
-		fi
-	done < $EmbedMAS_TMP/arduinoboard
-	echo "]" >> $EmbedMAS_TMP/json.out
-	cat $EmbedMAS_TMP/json.out
+			i=$((i+1))
+			if [ $i -le $((qtd-1)) ]; then
+				echo -n "}," >> $EmbedMAS_TMP/json.out
+			else
+				echo -n "}" >> $EmbedMAS_TMP/json.out
+			fi
+		done < $EmbedMAS_TMP/arduinoboard
+		echo "]" >> $EmbedMAS_TMP/json.out
+		cat $EmbedMAS_TMP/json.out
+	else
+		arduino-cli board list --format $log
+	fi
+	
 elif [ "$opt" = "listLibraries" ]; then
-	ls -l /root/Arduino/libraries/ | grep root > $EmbedMAS_TMP/listLibraries
-	qtd=`cat $EmbedMAS_TMP/listLibraries | nl | tail -1 | xargs | cut -d " " -f 1`
-	echo "[" > $EmbedMAS_TMP/json.out
-	i=0
-	while read -r LINE; do
-		librarie=`echo $LINE | xargs | cut -d " " -f 9`
 
-		echo -n "	{" >> $EmbedMAS_TMP/json.out
-			echo -n "\"name\": \"$librarie\"" >> $EmbedMAS_TMP/json.out
+	if [ "$log" = "text" ]; then
+		ls -l /root/Arduino/libraries/ | grep root > $EmbedMAS_TMP/listLibraries
+		qtd=`cat $EmbedMAS_TMP/listLibraries | nl | tail -1 | xargs | cut -d " " -f 1`
+		echo "[" > $EmbedMAS_TMP/json.out
+		i=0
+		while read -r LINE; do
+			librarie=`echo $LINE | xargs | cut -d " " -f 9`
 
-		i=$((i+1))
-		if [ $i -le $((qtd-1)) ]; then
-			echo "}," >> $EmbedMAS_TMP/json.out
-		else
-			echo "}" >> $EmbedMAS_TMP/json.out
-		fi
-	done < $EmbedMAS_TMP/listLibraries
-	echo "]" >> $EmbedMAS_TMP/json.out
-	cat $EmbedMAS_TMP/json.out
+			echo -n "	{" >> $EmbedMAS_TMP/json.out
+				echo -n "\"name\": \"$librarie\"" >> $EmbedMAS_TMP/json.out
+
+			i=$((i+1))
+			if [ $i -le $((qtd-1)) ]; then
+				echo "}," >> $EmbedMAS_TMP/json.out
+			else
+				echo "}" >> $EmbedMAS_TMP/json.out
+			fi
+		done < $EmbedMAS_TMP/listLibraries
+		echo "]" >> $EmbedMAS_TMP/json.out
+		cat $EmbedMAS_TMP/json.out
+	else
+		arduino-cli lib list --format $log
+	fi
+elif [ "$removeLib" != "" ]; then
+	arduino-cli lib uninstall $removeLib
 elif [ "$importLib" != "" ]; then
-	echo "import=$importLib"
-	unzip -o $importLib -d /root/Arduino/libraries/ > $EmbedMAS_TMP/importLibLog
-	cat $EmbedMAS_TMP/importLibLog
+	#echo "import=$importLib"
+	#unzip -o $importLib -d /root/Arduino/libraries/ > $EmbedMAS_TMP/importLibLog
+	#cat $EmbedMAS_TMP/importLibLog
+	arduino-cli config init --overwrite > /dev/null
+	arduino-cli config set library.enable_unsafe_install true > /dev/null
+	arduino-cli lib install --zip-path $importLib | grep -v "flags allow installing untrusted files, use it at your own risk"
+	arduino-cli config set library.enable_unsafe_install false
+
 elif [ "$sketch" != "" ]; then
 	if [ "$file" != "" ]; then
 		if [ "$board" != "" ]; then
