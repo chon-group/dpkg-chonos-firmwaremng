@@ -1,6 +1,6 @@
 # ChonOS Firmware Layer Manager
 
-|![chonos-firmwaremng]()|
+|![chonos-firmware](https://github.com/chon-group/dpkg-chonos-firmwaremng/assets/32855001/f4f43941-6fdb-4b58-9791-66f480c0d449)|
 |:--:|
 |ChonOS Firmware Layer Manager allows the management of the interfacing and firmware layers. The designer can deploy or update the firmware of Arduino boards remotely without disassembling the cyber-physical system.|
 
