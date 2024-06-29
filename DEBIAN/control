@@ -1,9 +1,9 @@
 Package: chonos-firmwaremng
-Version: 1.5.2
+Version: 1.6.0
 Priority:
 Architecture: all
 Essential:
-Depends: 
+Depends: javino
 Pre-depends: curl
 Suggests:
 Installed-Size:

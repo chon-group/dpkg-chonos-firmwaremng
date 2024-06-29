@@ -32,9 +32,9 @@ if [ "$opt" = "help" ]; then
 elif [ "$opt" = "deploy" ]; then
 	echo "Upgrading the firmware layer..."
 	if [ -n "$file" ] && [ -n "$port" ] && [ -n "$board" ] && [ -e "$file" ] && [ -e "$port" ]; then
-		result=`usr/bin/chonosFirmwareManager -s importingProject -f "$file" -b "$board" -l json | grep "success" | tr -d ' ' | tr -d ',' | xargs | cut -d ":" -f 2`
+		result=`/usr/bin/chonosFirmwareManager -s importingProject -f "$file" -b "$board" -l json | grep "success" | tr -d ' ' | tr -d ',' | xargs | cut -d ":" -f 2`
 		if [ "$result" = "true" ]; then
-			result=`usr/bin/chonosFirmwareManager -d importingProject -p "$port" -b "$board" -l json | grep error`
+			result=`/usr/bin/chonosFirmwareManager -d importingProject -p "$port" -b "$board" -l json | grep error`
 			if [ "$result" = "" ]; then
 				echo SUCCESS
 			else
