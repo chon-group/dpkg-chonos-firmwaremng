@@ -3,20 +3,10 @@ echo "Downloading the Arduino-CLI. A network connection is needed!"
 #Arduino CLi
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sh
 
-arduino-cli board list
-arduino-cli core install arduino:avr
+/usr/bin/arduino-cli board list
+/usr/bin/arduino-cli core install arduino:avr
 
-
-arduino-cli config init --overwrite
-arduino-cli config set library.enable_unsafe_install true
-
-#Javino Library
-curl -L -o /tmp/javino-latest.zip  https://github.com/chon-group/javino2arduino/archive/refs/tags/javino-latest.zip
-arduino-cli lib install --zip-path /tmp/javino-latest.zip
-
-curl -L -o /tmp/arduino-lib-hc-sr04.zip https://github.com/Martinsos/arduino-lib-hc-sr04/archive/refs/tags/2.0.0.zip
-arduino-cli lib install --zip-path /tmp/arduino-lib-hc-sr04.zip
-
-curl -L -o /tmp/arduino-lib-liquidCrystal.zip https://github.com/arduino-libraries/LiquidCrystal/archive/refs/tags/1.0.7.zip
-arduino-cli lib install --zip-path /tmp/arduino-lib-liquidCrystal.zip
-arduino-cli config set library.enable_unsafe_install false
+#Default Libraries
+/usr/bin/chonosFirmwareManager --importLibrary -g chon-group/javino2arduino
+/usr/bin/chonosFirmwareManager --importLibrary -g Martinsos/arduino-lib-hc-sr04
+/usr/bin/chonosFirmwareManager --importLibrary -g arduino-libraries/LiquidCrystal
