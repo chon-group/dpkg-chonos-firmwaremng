@@ -4,7 +4,7 @@ Priority:
 Architecture: all
 Essential:
 Depends: javino
-Pre-depends: curl
+Pre-depends: curl, file, coreutils, jq
 Suggests:
 Installed-Size:
 Maintainer: chon@grupo.cefet-rj.br

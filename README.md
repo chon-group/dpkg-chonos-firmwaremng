@@ -18,31 +18,40 @@ sudo apt install chonos-firmwaremng
 List of options and arguments:
 |Argument|Description|
 |-|-|
-|--list|shows all connected microcontrollers.|
+|___--listBoards___|shows all connected microcontrollers.|
+||___-l___ \[_format_\] define the output format (__json__\|__text__).|
 |||
-|--listLibraries|shows all instaled libraries.|
-|-i \[library\]| imports a .ZIP library file.|
-|-r \[libraryName\]|removes a library.|
+|___--listLibraries___|shows all instaled libraries.|
+||___-l___ \[_format_\] define the output format (__json__\|__text__).|
+|___--importLibrary___|imports a Library |
+||___-f___ \[_file_\] import form a file|
+||___-u___ \[_URL_\] import form a URL|
+||___-g___ \[_account/repository_\] import the latest version form a GitHub.|
+|___--removeLibrary___ \[_libraryName_\]|removes a library.|
 |||
-|-s \[sketck\]|creates and compile a Firmware Project.|
-||-f \[file\] defines the .INO firmware code |
-||-b \[board\] defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)|
-|-d \[sketck\]|deploys the Firmware Project.|
-||-b \[board\] defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)|
-||-p \[port\] defines the USB port.|
-|--deploy |compiles and deploys the firmware file in the defined port for the defined board|
-||-f \[file\] -b \[board\] -p \[port\]|
+|___--deploy___ |compiles and deploys the firmware file in the defined port for the defined board|
+||___-f___ \[file\] defines the .INO firmware code|
+||___-b___ \[board\] defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)|
+||___-p___ \[port\] defines the USB port.|
+|||
+|___-s___ \[_sketckName_\]|creates and compile a Firmware Project.|
+||___-f___ \[file\] defines the .INO firmware code|
+||___-b___ \[board\] defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)|
+|||
+|___-d___ \[_sketckName_\]|deploys the Firmware Project.|
+||___-b___ \[board\] defines the firmware board. Should be informed the FQDN (e.g., arduino:avr:uno)|
+||___-p___ \[port\] defines the USB port.|
 
 
 ### EXAMPLES
 
-1. Imports a library for the Arduino Libraries Folder
+1. Importing a library from a GitHub repository
 
 ```sh
-sudo chonosFirmwareManager -i /tmp/mylibrary.zip
+sudo chonosFirmwareManager --importLibrary -g chon-group/javino2arduino
 ```
 
-2. Deploys the firmware file for the Arduino UNO board connected at /dev/ttyACM0 port 
+2. Deploying the firmware file into the Arduino UNO board connected at /dev/ttyACM0 port 
 
 ```sh
 sudo chonosFirmwareManager –-deploy -f firmware.ino -p /dev/ttyACM0 -b arduino:avr:uno

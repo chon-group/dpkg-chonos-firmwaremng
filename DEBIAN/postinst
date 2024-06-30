@@ -2,12 +2,15 @@
 echo "Downloading the Arduino-CLI. A network connection is needed!"
 #Arduino CLi
 curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.sh | BINDIR=/usr/bin sh
+
 arduino-cli board list
 arduino-cli core install arduino:avr
 
-#Javino Library
+
 arduino-cli config init --overwrite
 arduino-cli config set library.enable_unsafe_install true
+
+#Javino Library
 curl -L -o /tmp/javino-latest.zip  https://github.com/chon-group/javino2arduino/archive/refs/tags/javino-latest.zip
 arduino-cli lib install --zip-path /tmp/javino-latest.zip
 
