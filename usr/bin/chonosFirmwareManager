@@ -97,26 +97,8 @@ elif [ "$opt" = "listBoards" ]; then
 elif [ "$opt" = "listLibraries" ]; then
 	if [ "$log" = "text" ]; then
 		list=$(/usr/bin/arduino-cli lib list --format json)
-		echo "$list" | jq '[.[] | {name: .library.name}]'
-		# ls -l /root/Arduino/libraries/ | grep root > $EmbedMAS_TMP/listLibraries
-		# qtd=`cat $EmbedMAS_TMP/listLibraries | nl | tail -1 | xargs | cut -d " " -f 1`
-		# echo "[" > $EmbedMAS_TMP/json.out
-		# i=0
-		# while read -r LINE; do
-		# 	librarie=`echo $LINE | xargs | cut -d " " -f 9`
-
-		# 	echo -n "	{" >> $EmbedMAS_TMP/json.out
-		# 		echo -n "\"name\": \"$librarie\"" >> $EmbedMAS_TMP/json.out
-
-		# 	i=$((i+1))
-		# 	if [ $i -le $((qtd-1)) ]; then
-		# 		echo "}," >> $EmbedMAS_TMP/json.out
-		# 	else
-		# 		echo "}" >> $EmbedMAS_TMP/json.out
-		# 	fi
-		# done < $EmbedMAS_TMP/listLibraries
-		# echo "]" >> $EmbedMAS_TMP/json.out
-		# cat $EmbedMAS_TMP/json.out
+		#echo "$list" | jq '[.[] | {name: .library.name}]'
+		echo "$list" | jq '[.installed_libraries[] | {name: .library.name}]'
 	else
 		/usr/bin/arduino-cli lib list --format $log
 	fi
