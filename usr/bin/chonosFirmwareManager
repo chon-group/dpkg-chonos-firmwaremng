@@ -3,6 +3,8 @@ export HOME=/root
 EmbedMAS_TMP=/tmp/.embedMAS
 mkdir -p $EmbedMAS_TMP
 
+sudo chmod 777 $EmbedMAS_TMP -R
+
 while getopts b:d:i:f:g:l:p:r:s:u:-: flag
 do
     case "${flag}" in
