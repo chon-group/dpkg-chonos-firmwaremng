@@ -7,6 +7,8 @@ curl -fsSL https://raw.githubusercontent.com/arduino/arduino-cli/master/install.
 /usr/bin/arduino-cli core install arduino:avr
 
 #Default Libraries
+
+/usr/bin/chonosFirmwareManager --removeLibrary HCSR04
 /usr/bin/chonosFirmwareManager --importLibrary -g chon-group/javino2arduino
-/usr/bin/chonosFirmwareManager --importLibrary -g Martinsos/arduino-lib-hc-sr04
+/usr/bin/chonosFirmwareManager --importLibrary -g gamegine/HCSR04-ultrasonic-sensor-lib
 /usr/bin/chonosFirmwareManager --importLibrary -g arduino-libraries/LiquidCrystal

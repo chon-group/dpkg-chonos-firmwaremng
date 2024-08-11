@@ -1,10 +1,10 @@
 Package: chonos-firmwaremng
-Version: 1.6.1
+Version: 1.6.2
 Priority:
 Architecture: all
 Essential:
-Depends: javino
-Pre-depends: curl, file, coreutils, jq
+Depends: javino (>= 1.6.4-240707)
+Pre-depends: curl, file, coreutils, jq, sudo
 Suggests:
 Installed-Size:
 Maintainer: chon@grupo.cefet-rj.br

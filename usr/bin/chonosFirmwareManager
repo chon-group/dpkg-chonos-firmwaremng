@@ -29,13 +29,13 @@ if [ "$log" = "" ]; then
 fi
 
 if [ "$opt" = "help" ]; then
-	man chonosFirmwareManager
+	echo "Consult manual at: https://github.com/chon-group/dpkg-chonos-firmwaremng"
 elif [ "$opt" = "deploy" ]; then
 	echo "Upgrading the firmware layer..."
 	if [ -n "$file" ] && [ -n "$port" ] && [ -n "$board" ] && [ -e "$file" ] && [ -e "$port" ]; then
-		result=`/usr/bin/chonosFirmwareManager -s importingProject -f "$file" -b "$board" -l json | grep "success" | tr -d ' ' | tr -d ',' | xargs | cut -d ":" -f 2`
+		result=`sudo /usr/bin/chonosFirmwareManager -s importingProject -f "$file" -b "$board" -l json | grep "success" | tr -d ' ' | tr -d ',' | xargs | cut -d ":" -f 2`
 		if [ "$result" = "true" ]; then
-			result=`/usr/bin/chonosFirmwareManager -d importingProject -p "$port" -b "$board" -l json | grep error`
+			result=`sudo /usr/bin/chonosFirmwareManager -d importingProject -p "$port" -b "$board" -l json | grep error`
 			if [ "$result" = "" ]; then
 				echo SUCCESS
 			else
@@ -64,7 +64,7 @@ elif [ "$opt" = "list" ]; then
 elif [ "$opt" = "listBoards" ]; then
 	# Mantendo compatibilidade com versao anterior da chonIDE futuras versões irão retornar em formato text
 	if [ "$log" = "text" ]; then
-		/usr/bin/arduino-cli board list | grep -e "ttyACM" -e "ttyUSB" > $EmbedMAS_TMP/arduinoboard
+		sudo /usr/bin/arduino-cli board list | grep -e "ttyACM" -e "ttyUSB" > $EmbedMAS_TMP/arduinoboard
 		qtd=`cat $EmbedMAS_TMP/arduinoboard | nl | tail -1 | xargs | cut -d " " -f 1`
 
 		echo -n "[" > $EmbedMAS_TMP/json.out
@@ -91,37 +91,37 @@ elif [ "$opt" = "listBoards" ]; then
 		echo "]" >> $EmbedMAS_TMP/json.out
 		cat $EmbedMAS_TMP/json.out
 	else
-		/usr/bin/arduino-cli board list --format $log
+		sudo /usr/bin/arduino-cli board list --format $log
 	fi
 	
 elif [ "$opt" = "listLibraries" ]; then
 	if [ "$log" = "text" ]; then
-		list=$(/usr/bin/arduino-cli lib list --format json)
+		list=$(sudo /usr/bin/arduino-cli lib list --format json)
 		#echo "$list" | jq '[.[] | {name: .library.name}]'
 		echo "$list" | jq '[.installed_libraries[] | {name: .library.name}]'
 	else
-		/usr/bin/arduino-cli lib list --format $log
+		sudo /usr/bin/arduino-cli lib list --format $log
 	fi
 elif [ "$opt" = "importLibrary" ]; then
 	if [ "$file" != "" ]; then 
 		echo -n "Importing $(basename "$file")"
 		if [ -f "$file" ] &&  file "$file" | grep -q "Zip archive data"; then
 			echo " [OK]"
-			/usr/bin/arduino-cli config init --overwrite > /dev/null
-			/usr/bin/arduino-cli config set library.enable_unsafe_install true > /dev/null
-			/usr/bin/arduino-cli lib install --zip-path $file | grep -v "flags allow installing untrusted files, use it at your own risk"
-			/usr/bin/arduino-cli config set library.enable_unsafe_install false
+			sudo /usr/bin/arduino-cli config init --overwrite > /dev/null
+			sudo /usr/bin/arduino-cli config set library.enable_unsafe_install true > /dev/null
+			sudo /usr/bin/arduino-cli lib install --zip-path $file | grep -v "flags allow installing untrusted files, use it at your own risk"
+			sudo /usr/bin/arduino-cli config set library.enable_unsafe_install false
 		else
 			echo " [ERROR]"
 		fi
 	elif [ "$URL" != "" ]; then 
-		mkdir -p $EmbedMAS_TMP/firmware/download
+		sudo mkdir -p $EmbedMAS_TMP/firmware/download
 		FILENAME=$(basename "$URL")
 		echo -n "Downloading library from: $URL"
-		curl -L -o "$EmbedMAS_TMP/firmware/download/$FILENAME" "$URL" --silent
+		sudo curl -L -o "$EmbedMAS_TMP/firmware/download/$FILENAME" "$URL" --silent
 		if [ -f "$EmbedMAS_TMP/firmware/download/$FILENAME" ]; then 
 			echo " [OK]"
-        	/usr/bin/chonosFirmwareManager --importLibrary -f "$EmbedMAS_TMP/firmware/download/$FILENAME"
+        	sudo /usr/bin/chonosFirmwareManager --importLibrary -f "$EmbedMAS_TMP/firmware/download/$FILENAME"
 		else
 			echo " [ERROR]"
 		fi
@@ -133,13 +133,13 @@ elif [ "$opt" = "importLibrary" ]; then
 		if [ "$TAG_NAME" != "" ]; then
 			echo " [OK]"
 			LATEST_URL="https://github.com/$GIT/archive/refs/tags/$TAG_NAME.zip"
-			/usr/bin/chonosFirmwareManager --importLibrary -u "$LATEST_URL"
+			sudo /usr/bin/chonosFirmwareManager --importLibrary -u "$LATEST_URL"
 		else
 			echo " [ERROR]"
 		fi
 	fi
 elif [ "$opt" = "removeLibrary" ]; then
-	/usr/bin/arduino-cli lib uninstall "$2"
+	sudo /usr/bin/arduino-cli lib uninstall "$2"
 elif [ "$removeLib" != "" ]; then
 	# Maintaining compatibility with current chonIDE version
 	/usr/bin/chonosFirmwareManager --removeLibrary "$removeLib"
@@ -158,9 +158,9 @@ elif [ "$sketch" != "" ]; then
 			echo "[chonosFirmwareManager] Compiling $file " >> $EmbedMAS_TMP/embeddedMAS.log
 			rm -rf /tmp/$sketch
 			rm -rf $EmbedMAS_TMP/fimrware-log.out
-			/usr/bin/arduino-cli sketch new /tmp/$sketch --format $log --no-color>> $EmbedMAS_TMP/fimrware-log.out
+			sudo /usr/bin/arduino-cli sketch new /tmp/$sketch --format $log --no-color>> $EmbedMAS_TMP/fimrware-log.out
 			cp $file /tmp/$sketch/$sketch.ino
-			/usr/bin/arduino-cli compile --libraries /root/Arduino/libraries/ --fqbn $board /tmp/$sketch --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
+			sudo /usr/bin/arduino-cli compile --libraries /root/Arduino/libraries/ --fqbn $board /tmp/$sketch --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
 			cat $EmbedMAS_TMP/fimrware-log.out | grep compiler_out | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out | grep compiler_err | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out | grep "\"error\":" | cut -d "\"" -f 4 | sed 's/\\n/\n/g' >> $EmbedMAS_TMP/embeddedMAS.log
@@ -173,10 +173,12 @@ elif [ "$deploy" != "" ]; then
 			echo " " >> $EmbedMAS_TMP/embeddedMAS.log
 			echo "[chonosFirmwareManager] Deploying $deploy " >> $EmbedMAS_TMP/embeddedMAS.log
 			rm -rf $EmbedMAS_TMP/fimrware-log.out
-			/usr/bin/arduino-cli upload --verbose --fqbn $board -p $port /tmp/$deploy --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
+			sudo /usr/bin/arduino-cli upload --verbose --fqbn $board -p $port /tmp/$deploy --format $log --no-color >> $EmbedMAS_TMP/fimrware-log.out 2>> $EmbedMAS_TMP/fimrware-log.out
 			cat $EmbedMAS_TMP/fimrware-log.out | grep stderr | sed 's/\\n/\n/g' | grep "avrdude: "  >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out | grep error | cut -d "\"" -f 4   >> $EmbedMAS_TMP/embeddedMAS.log
 			cat $EmbedMAS_TMP/fimrware-log.out
 		fi
 	fi
+else
+	echo "Invalid arguments, consult manual at: https://github.com/chon-group/dpkg-chonos-firmwaremng"
 fi
