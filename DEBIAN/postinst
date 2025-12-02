@@ -9,6 +9,6 @@ echo "Downloading the Arduino-CLI. A network connection is needed!"
 #Default Libraries
 
 /usr/bin/chonosFirmwareManager --removeLibrary HCSR04
-/usr/bin/chonosFirmwareManager --importLibrary -g chon-group/javino2arduino
-/usr/bin/chonosFirmwareManager --importLibrary -g gamegine/HCSR04-ultrasonic-sensor-lib
-/usr/bin/chonosFirmwareManager --importLibrary -g arduino-libraries/LiquidCrystal
+/usr/bin/chonosFirmwareManager --importLibrary -f /opt/group.chon/lib/arduino-libraries/javino2arduino-javino-oldstable.zip
+/usr/bin/chonosFirmwareManager --importLibrary -f /opt/group.chon/lib/arduino-libraries/HCSR04-ultrasonic-sensor-lib-2.0.2.zip
+/usr/bin/chonosFirmwareManager --importLibrary -f /opt/group.chon/lib/arduino-libraries/LiquidCrystal-1.0.7.zip
